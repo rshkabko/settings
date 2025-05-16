@@ -112,6 +112,19 @@ class ModelSettingStore extends SettingStore
 				->update(['value' => $value]);
 		}
 
+		// Remove unsupported values
+        foreach ($insertData as $key => $value) {
+            // Empty array
+            if (is_array($value) && empty($value)) {
+                unset($insertData[$key]);
+            }
+
+            // Null
+            if (is_null($value)) {
+                unset($insertData[$key]);
+            }
+        }
+
 		if ($insertData) {
 			$this->newQuery(true)
 				->insert($this->prepareInsertData($insertData));
