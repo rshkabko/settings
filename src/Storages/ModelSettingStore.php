@@ -134,22 +134,16 @@ class ModelSettingStore extends SettingStore
 	 * @return array
 	 */
 	protected function prepareInsertData(array $data): array
-	{
-		if ($this->extraColumns) {
-			foreach ($data as $key => $value) {
-				$dbData[] = array_merge(
-					$this->extraColumns,
-					['key' => $key, 'value' => $value]
-				);
-			}
-		} else {
-			foreach ($data as $key => $value) {
-				$dbData[] = ['key' => $key, 'value' => $value];
-			}
-		}
+    {
+        foreach ($data as $key => $value) {
+            $dbData[] = array_merge(
+                $this->extraColumns ?? [],
+                ['key' => $key, 'value' => $value]
+            );
+        }
 
-		return $dbData ?? [];
-	}
+        return $dbData ?? [];
+    }
 
 
 	/**
