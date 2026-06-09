@@ -148,11 +148,7 @@ class DatabaseSettingStore extends SettingStore
 	protected function write(array $data)
 	{
 		$keysQuery = $this->newQuery();
-
-		// "lists" was removed in Laravel 5.3, at which point
-		// "pluck" should provide the same functionality.
-		$method = !method_exists($keysQuery, 'lists') ? 'pluck' : 'lists';
-		$keys = $keysQuery->$method($this->keyColumn);
+		$keys = $keysQuery->pluck($this->keyColumn);
 
 		$insertData = Arr::dot($data);
 		$updatedData = Arr::dot($this->updatedData);

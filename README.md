@@ -155,4 +155,4 @@ Prioritized backlog (P0 = most urgent).
 - [ ] No value serialization: everything is stored as plain text. Arrays survive only via dot-flattening, `false` becomes `''`, empty arrays and nulls cannot be stored, types are lost on read. JSON-encode values.
 - [ ] No request-level memoization for scoped reads — consumer helpers that fall back from a user scope to the global scope pay two queries per read when the cache is disabled.
 - [ ] `JsonSettingStore`: constructor side effect (creates the file inside `setPath()`), non-atomic writes without locks.
-- [ ] `DatabaseSettingStore::write()` still carries the Laravel < 5.3 `lists`/`pluck` fallback — removable once the diff logic is reworked.
+- [x] `DatabaseSettingStore::write()` carried the Laravel < 5.3 `lists`/`pluck` fallback — replaced with a direct `pluck()` call (the package requires illuminate >= 8, where `lists()` never exists).
