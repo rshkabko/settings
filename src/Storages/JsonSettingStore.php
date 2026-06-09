@@ -30,18 +30,6 @@ class JsonSettingStore extends SettingStore
 	 */
 	public function setPath($path)
 	{
-		// If the file does not already exist, we will attempt to create it.
-		if (!$this->files->exists($path)) {
-			$result = $this->files->put($path, '{}');
-			if ($result === false) {
-				throw new \InvalidArgumentException("Could not write to $path.");
-			}
-		}
-
-		if (!$this->files->isWritable($path)) {
-			throw new \InvalidArgumentException("$path is not writable.");
-		}
-
 		$this->path = $path;
 	}
 
@@ -50,6 +38,11 @@ class JsonSettingStore extends SettingStore
 	 */
 	protected function read()
 	{
+		// The file is created lazily on the first write
+		if (!$this->files->exists($this->path)) {
+			return [];
+		}
+
 		$contents = $this->files->get($this->path);
 
 		$data = json_decode($contents, true);
@@ -66,12 +59,11 @@ class JsonSettingStore extends SettingStore
 	 */
 	protected function write(array $data)
 	{
-		if ($data) {
-			$contents = json_encode($data);
-		} else {
-			$contents = '{}';
-		}
+		$contents = $data ? json_encode($data) : '{}';
 
-		$this->files->put($this->path, $contents);
+		// LOCK_EX prevents interleaved concurrent writes; last write still wins
+		if ($this->files->put($this->path, $contents, true) === false) {
+			throw new \InvalidArgumentException("Could not write to {$this->path}.");
+		}
 	}
 }

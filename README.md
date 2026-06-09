@@ -154,5 +154,5 @@ Prioritized backlog (P0 = most urgent).
 - [ ] `DatabaseSettingStore` and `ModelSettingStore` are ~85% copy-paste (`write`, `forget`, `prepareInsertData`, `parseReadData`) — extract the shared diff/persist logic (inheritance or trait) so fixes land once.
 - [ ] No value serialization: everything is stored as plain text. Arrays survive only via dot-flattening, `false` becomes `''`, empty arrays and nulls cannot be stored, types are lost on read. JSON-encode values.
 - [ ] No request-level memoization for scoped reads — consumer helpers that fall back from a user scope to the global scope pay two queries per read when the cache is disabled.
-- [ ] `JsonSettingStore`: constructor side effect (creates the file inside `setPath()`), non-atomic writes without locks.
+- [x] `JsonSettingStore`: constructor side effect (created the file inside `setPath()`) and unlocked writes — the file is now created lazily on the first write and writes use `LOCK_EX`. Concurrent read-modify-write is still last-write-wins, same as the DB stores until the P0 upsert rework.
 - [x] `DatabaseSettingStore::write()` carried the Laravel < 5.3 `lists`/`pluck` fallback — replaced with a direct `pluck()` call (the package requires illuminate >= 8, where `lists()` never exists).
