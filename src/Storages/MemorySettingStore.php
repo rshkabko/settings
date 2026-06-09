@@ -6,7 +6,7 @@ use Flamix\Settings\SettingStore;
 
 class MemorySettingStore extends SettingStore
 {
-	public function __construct(array $data = null)
+	public function __construct(?array $data = null)
 	{
 		if ($data) {
 			$this->data = $data;

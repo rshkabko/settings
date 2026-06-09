@@ -28,9 +28,9 @@ class ModelSettingStore extends SettingStore
 	}
 
 	/**
-	 * Set the table to query from.
+	 * Set the model instance.
 	 *
-	 * @param string $table
+	 * @param object $model
 	 */
 	public function setModel($model)
 	{
@@ -51,7 +51,7 @@ class ModelSettingStore extends SettingStore
 	/**
 	 * Forget setting by key.
 	 * Do not forget save(), if you need to save the changes.
-	 * By default method only forgets dinamicly settings.
+	 * By default method only forgets dynamically set settings.
 	 *
 	 * @param $key
 	 * @return void
@@ -113,17 +113,17 @@ class ModelSettingStore extends SettingStore
 		}
 
 		// Remove unsupported values
-        foreach ($insertData as $key => $value) {
-            // Empty array
-            if (is_array($value) && empty($value)) {
-                unset($insertData[$key]);
-            }
+		foreach ($insertData as $key => $value) {
+			// Empty array
+			if (is_array($value) && empty($value)) {
+				unset($insertData[$key]);
+			}
 
-            // Null
-            if (is_null($value)) {
-                unset($insertData[$key]);
-            }
-        }
+			// Null
+			if (is_null($value)) {
+				unset($insertData[$key]);
+			}
+		}
 
 		if ($insertData) {
 			$this->newQuery(true)
@@ -138,7 +138,7 @@ class ModelSettingStore extends SettingStore
 	}
 
 	/**
-	 * Transforms settings data into an array ready to be insterted into the
+	 * Transforms settings data into an array ready to be inserted into the
 	 * database. Call Arr::dot on a multidimensional array before passing it
 	 * into this method!
 	 *
@@ -147,17 +147,16 @@ class ModelSettingStore extends SettingStore
 	 * @return array
 	 */
 	protected function prepareInsertData(array $data): array
-    {
-        foreach ($data as $key => $value) {
-            $dbData[] = array_merge(
-                $this->extraColumns ?? [],
-                ['key' => $key, 'value' => $value]
-            );
-        }
+	{
+		foreach ($data as $key => $value) {
+			$dbData[] = array_merge(
+				$this->extraColumns ?? [],
+				['key' => $key, 'value' => $value]
+			);
+		}
 
-        return $dbData ?? [];
-    }
-
+		return $dbData ?? [];
+	}
 
 	/**
 	 * Get settings from database.
@@ -211,7 +210,7 @@ class ModelSettingStore extends SettingStore
 
 		if (!$insert) {
 			foreach ($this->extraColumns as $key => $value) {
-                $model = $model->where($key, '=', $value);
+				$model = $model->where($key, '=', $value);
 			}
 		}
 

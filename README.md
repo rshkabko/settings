@@ -58,13 +58,12 @@ Reading will come from the store, and then from the cache, this can reduce load 
 // Cache usage configurations.
 'enableCache' => false,
 'forgetCacheByWrite' => true,
-'cacheTtl' => 15,
+'cacheTtl' => 3600,
 ```
 
 ### JSON storage
 
 You can modify the path used on run-time using `Setting::setPath($path)`.
-
 
 ### Database storage
 
@@ -78,9 +77,9 @@ For example, if you want to store settings for multiple users/clients in the sam
 
 ```php
 <?php
-Setting::setExtraColumns(array(
-	'user_id' => Auth::user()->id
-));
+Setting::setExtraColumns([
+	'user_id' => Auth::id(),
+]);
 ?>
 ```
 
@@ -100,6 +99,23 @@ Setting::setConstraint(function($query, $insert) {
 ?>
 ```
 
+### Model storage (default)
+
+The default store is `model`. It works like the database store, but reads and writes through an Eloquent model instead of a raw connection, so the model defines the table and connection. The model is configured via the `SETTINGS_MODEL` env variable or the `model` config key (defaults to `Flamix\Settings\Models\Settings`).
+
+Scoping works the same way as with the database store:
+
+```php
+<?php
+// Per-user settings
+Setting::setExtraColumns(['user_id' => Auth::id()]);
+Setting::set('date_format', 'd.m.Y');
+Setting::save();
+?>
+```
+
+Note: `setExtraColumns()` resets the loaded state, so the next read re-queries the store within the new scope. The table needs the extra columns and a composite unique index, e.g. `(key, user_id)`.
+
 ### Custom stores
 
 This package uses the Laravel `Manager` class under the hood, so it's easy to add your own custom session store driver if you want to store in some other way. All you need to do is extend the abstract `SettingStore` class, implement the abstract methods and call `Setting::extend`.
@@ -114,3 +130,29 @@ Setting::extend('mystore', function($app) {
 });
 ?>
 ```
+
+## TODO / Known issues
+
+Prioritized backlog (P0 = most urgent).
+
+### P0 — data-loss risks
+
+- [ ] `save()` does not call `load()`: after `forgetAll()` (called directly or implicitly by `setExtraColumns()`) a `save()` writes an empty diff and **deletes all rows in the current scope**. `save()` must force-load before diffing, and `forgetAll()` should not mark the store as unsaved (reads currently set `unsaved = true` via `setExtraColumns()`).
+- [ ] No upsert: `write()` is a read-modify-write (pluck → update → insert → delete in separate queries). Concurrent requests cause lost updates or unique constraint violations on `(key, user_id)`. Switch to `upsert()` (available since Laravel 8, which is already the minimum).
+- [ ] `set($key, null)` silently deletes the key: `isset()` in the write-diff treats null as absent, and nulls are stripped from inserts ("Remove unsupported values"). This is undocumented and inconsistent with `get()`. Define explicit null semantics.
+
+### P1 — bugs & infrastructure
+
+- [ ] `ModelSettingStore::parseReadData()` references undefined `$this->valueColumn` in the `is_array($row)` branch — latent bug, currently masked because Eloquent always returns objects.
+- [ ] Tests are broken: they reference the pre-`Storages\` namespace, `composer.json` has no `require-dev` (no PHPUnit/Mockery), and `phpunit.xml` targets PHPUnit ≤ 9. Restore the suite (Orchestra Testbench, real DB) and add CI.
+- [ ] `ServiceProvider::$defer = true` is dead code since Laravel 5.8 — implement `Illuminate\Contracts\Support\DeferrableProvider` or drop `$defer`/`provides()`.
+- [ ] Migrations are both auto-loaded (`loadMigrationsFrom()`) and publishable — publishing duplicates them. Also the package migration creates the table without `user_id`, while the per-user scope (`setExtraColumns`) is a package feature — the scope column and the `(key, user_id)` unique index should ship with the package.
+- [ ] Cache vs scoped reads: `cacheKey()` concatenates extra-column **values** only (scopes with different column names but same values collide), and every scoped read goes through `setExtraColumns()` → full reload, so enabling `enableCache` produces multiple cache round-trips per read.
+
+### P2 — architecture
+
+- [ ] `DatabaseSettingStore` and `ModelSettingStore` are ~85% copy-paste (`write`, `forget`, `prepareInsertData`, `parseReadData`) — extract the shared diff/persist logic (inheritance or trait) so fixes land once.
+- [ ] No value serialization: everything is stored as plain text. Arrays survive only via dot-flattening, `false` becomes `''`, empty arrays and nulls cannot be stored, types are lost on read. JSON-encode values.
+- [ ] No request-level memoization for scoped reads — consumer helpers that fall back from a user scope to the global scope pay two queries per read when the cache is disabled.
+- [ ] `JsonSettingStore`: constructor side effect (creates the file inside `setPath()`), non-atomic writes without locks.
+- [ ] `DatabaseSettingStore::write()` still carries the Laravel < 5.3 `lists`/`pluck` fallback — removable once the diff logic is reworked.

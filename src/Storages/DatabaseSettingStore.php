@@ -49,11 +49,11 @@ class DatabaseSettingStore extends SettingStore
 	 *
 	 * @var array
 	 */
-	protected $extraColumns = array();
+	protected $extraColumns = [];
 
 	/**
 	 * @param \Illuminate\Database\Connection $connection
-	 * @param string                         $table
+	 * @param string                          $table
 	 */
 	public function __construct(Connection $connection, $table = null, $keyColumn = null, $valueColumn = null)
 	{
@@ -76,7 +76,7 @@ class DatabaseSettingStore extends SettingStore
 	/**
 	 * Set the key column name to query from.
 	 *
-	 * @param string $key_column
+	 * @param string $keyColumn
 	 */
 	public function setKeyColumn($keyColumn)
 	{
@@ -86,7 +86,7 @@ class DatabaseSettingStore extends SettingStore
 	/**
 	 * Set the value column name to query from.
 	 *
-	 * @param string $value_column
+	 * @param string $valueColumn
 	 */
 	public function setValueColumn($valueColumn)
 	{
@@ -100,7 +100,7 @@ class DatabaseSettingStore extends SettingStore
 	 */
 	public function setConstraint(\Closure $callback)
 	{
-		$this->data = array();
+		$this->data = [];
 		$this->loaded = false;
 		$this->queryConstraint = $callback;
 	}
@@ -157,13 +157,13 @@ class DatabaseSettingStore extends SettingStore
 		$insertData = Arr::dot($data);
 		$updatedData = Arr::dot($this->updatedData);
 		$persistedData = Arr::dot($this->persistedData);
-		$updateData = array();
-		$deleteKeys = array();
+		$updateData = [];
+		$deleteKeys = [];
 
 		foreach ($keys as $key) {
-            if (isset($updatedData[$key]) && isset($persistedData[$key]) && (string)$updatedData[$key] !== (string)$persistedData[$key]) {
+			if (isset($updatedData[$key]) && isset($persistedData[$key]) && (string)$updatedData[$key] !== (string)$persistedData[$key]) {
 				$updateData[$key] = $updatedData[$key];
-            } elseif (!isset($insertData[$key])) {
+			} elseif (!isset($insertData[$key])) {
 				$deleteKeys[] = $key;
 			}
 			unset($insertData[$key]);
@@ -172,7 +172,7 @@ class DatabaseSettingStore extends SettingStore
 		foreach ($updateData as $key => $value) {
 			$this->newQuery()
 				->where($this->keyColumn, '=', strval($key))
-				->update(array($this->valueColumn => $value));
+				->update([$this->valueColumn => $value]);
 		}
 
 		if ($insertData) {
@@ -188,7 +188,7 @@ class DatabaseSettingStore extends SettingStore
 	}
 
 	/**
-	 * Transforms settings data into an array ready to be insterted into the
+	 * Transforms settings data into an array ready to be inserted into the
 	 * database. Call Arr::dot on a multidimensional array before passing it
 	 * into this method!
 	 *
@@ -198,18 +198,18 @@ class DatabaseSettingStore extends SettingStore
 	 */
 	protected function prepareInsertData(array $data)
 	{
-		$dbData = array();
+		$dbData = [];
 
 		if ($this->extraColumns) {
 			foreach ($data as $key => $value) {
 				$dbData[] = array_merge(
 					$this->extraColumns,
-					array($this->keyColumn => $key, $this->valueColumn => $value)
+					[$this->keyColumn => $key, $this->valueColumn => $value]
 				);
 			}
 		} else {
 			foreach ($data as $key => $value) {
-				$dbData[] = array($this->keyColumn => $key, $this->valueColumn => $value);
+				$dbData[] = [$this->keyColumn => $key, $this->valueColumn => $value];
 			}
 		}
 
@@ -233,7 +233,7 @@ class DatabaseSettingStore extends SettingStore
 	 */
 	public function parseReadData($data)
 	{
-		$results = array();
+		$results = [];
 
 		foreach ($data as $row) {
 			if (is_array($row)) {

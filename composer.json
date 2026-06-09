@@ -13,6 +13,7 @@
         }
     ],
     "require": {
+        "php": ">=8.0",
         "illuminate/support": ">=8",
         "illuminate/cache": ">=8"
     },

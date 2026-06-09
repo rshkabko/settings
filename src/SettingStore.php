@@ -19,7 +19,7 @@ abstract class SettingStore
     protected $updatedData = [];
 
     /**
-     * The settings updated data.
+     * The settings data as last read from the store.
      *
      * @var array
      */
