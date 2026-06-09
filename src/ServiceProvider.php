@@ -7,13 +7,6 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 class ServiceProvider extends BaseServiceProvider
 {
     /**
-     * This provider is deferred and should be lazy loaded.
-     *
-     * @var boolean
-     */
-    protected $defer = true;
-
-    /**
      * Register IoC bindings.
      */
     public function register()
@@ -40,19 +33,5 @@ class ServiceProvider extends BaseServiceProvider
         ], 'config');
 
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-    }
-
-    /**
-     * Which IoC bindings the provider provides.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return array(
-            'Flamix\Settings\SettingsManager',
-            'Flamix\Settings\SettingStore',
-            'setting'
-        );
     }
 }

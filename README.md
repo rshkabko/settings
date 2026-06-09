@@ -145,7 +145,7 @@ Prioritized backlog (P0 = most urgent).
 
 - [ ] `ModelSettingStore::parseReadData()` references undefined `$this->valueColumn` in the `is_array($row)` branch — latent bug, currently masked because Eloquent always returns objects.
 - [ ] Tests are broken: they reference the pre-`Storages\` namespace, `composer.json` has no `require-dev` (no PHPUnit/Mockery), and `phpunit.xml` targets PHPUnit ≤ 9. Restore the suite (Orchestra Testbench, real DB) and add CI.
-- [ ] `ServiceProvider::$defer = true` is dead code since Laravel 5.8 — implement `Illuminate\Contracts\Support\DeferrableProvider` or drop `$defer`/`provides()`.
+- [x] `ServiceProvider::$defer = true` was dead code since Laravel 5.8 — dropped `$defer`/`provides()`, the provider is intentionally eager: deferral is incompatible with boot-time side effects (`loadMigrationsFrom()`, `publishes()`) and saves nothing here.
 - [x] Migrations were both auto-loaded (`loadMigrationsFrom()`) and publishable — publishing is removed, auto-load only. Scope columns (e.g. `user_id`) intentionally ship with the consumer package (`ui-saas-user`), not here — the settings package stays generic key-value.
 - [ ] Cache vs scoped reads: `cacheKey()` concatenates extra-column **values** only (scopes with different column names but same values collide), and every scoped read goes through `setExtraColumns()` → full reload, so enabling `enableCache` produces multiple cache round-trips per read.
 
