@@ -38,10 +38,6 @@ class ServiceProvider extends BaseServiceProvider
         $this->publishes([
             __DIR__ . '/../config/config.php' => config_path('settings.php')
         ], 'config');
-        
-        $this->publishes([
-            __DIR__ . '/../database/migrations/' => database_path('migrations'),
-        ], 'migrations');
 
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }

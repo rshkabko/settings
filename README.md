@@ -69,7 +69,7 @@ You can modify the path used on run-time using `Setting::setPath($path)`.
 
 #### Using Migration File
 
-If you use the database store you need to run `php artisan vendor:publish --provider="Flamix\Settings\ServiceProvider" --tag="migrations" && php artisan migrate`.
+The package migration is loaded automatically — just run `php artisan migrate`. It creates the settings table (`key`/`value` columns by default, names are configurable). Scope columns for `setExtraColumns()` (e.g. `user_id`) are not part of this package — the consumer that introduces the scope ships its own migration (in Flamix projects that's `ui-saas-user`).
 
 #### Example
 
@@ -146,7 +146,7 @@ Prioritized backlog (P0 = most urgent).
 - [ ] `ModelSettingStore::parseReadData()` references undefined `$this->valueColumn` in the `is_array($row)` branch — latent bug, currently masked because Eloquent always returns objects.
 - [ ] Tests are broken: they reference the pre-`Storages\` namespace, `composer.json` has no `require-dev` (no PHPUnit/Mockery), and `phpunit.xml` targets PHPUnit ≤ 9. Restore the suite (Orchestra Testbench, real DB) and add CI.
 - [ ] `ServiceProvider::$defer = true` is dead code since Laravel 5.8 — implement `Illuminate\Contracts\Support\DeferrableProvider` or drop `$defer`/`provides()`.
-- [ ] Migrations are both auto-loaded (`loadMigrationsFrom()`) and publishable — publishing duplicates them. Also the package migration creates the table without `user_id`, while the per-user scope (`setExtraColumns`) is a package feature — the scope column and the `(key, user_id)` unique index should ship with the package.
+- [x] Migrations were both auto-loaded (`loadMigrationsFrom()`) and publishable — publishing is removed, auto-load only. Scope columns (e.g. `user_id`) intentionally ship with the consumer package (`ui-saas-user`), not here — the settings package stays generic key-value.
 - [ ] Cache vs scoped reads: `cacheKey()` concatenates extra-column **values** only (scopes with different column names but same values collide), and every scoped read goes through `setExtraColumns()` → full reload, so enabling `enableCache` produces multiple cache round-trips per read.
 
 ### P2 — architecture
