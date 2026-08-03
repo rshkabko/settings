@@ -165,19 +165,6 @@ abstract class SettingStore
     }
 
     /**
-     * Unset all keys in the settings data.
-     *
-     * @return void
-     */
-    public function forgetAll()
-    {
-        $this->unsaved = true;
-        $this->data = [];
-        $this->updatedData = [];
-        $this->loaded = false;
-    }
-
-    /**
      * Discard in-memory state on scope change (extra columns / constraint)
      * WITHOUT marking the store dirty: switching context is not a data change,
      * so a later save() with no explicit set()/forget() must be a no-op.

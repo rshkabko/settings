@@ -129,15 +129,6 @@ abstract class AbstractFunctionalTest extends TestCase
 	}
 
 	/** @test */
-	public function can_forget_all()
-	{
-		$store = $this->getStore(array('foo' => 'bar'));
-		$this->assertStoreEquals($store, array('foo' => 'bar'));
-		$store->forgetAll();
-		$this->assertStoreEquals($store, array());
-	}
-
-	/** @test */
 	public function defaults_are_respected()
 	{
 		$this->defaults = ['foo' => 'default', 'bar' => 'default'];

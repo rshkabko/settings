@@ -137,7 +137,7 @@ Prioritized backlog (P0 = most urgent).
 
 ### P0 — data-loss risks
 
-- [ ] `save()` does not call `load()`: after `forgetAll()` (called directly or implicitly by `setExtraColumns()`) a `save()` writes an empty diff and **deletes all rows in the current scope**. `save()` must force-load before diffing, and `forgetAll()` should not mark the store as unsaved (reads currently set `unsaved = true` via `setExtraColumns()`).
+- [x] `save()` does not call `load()`: a `save()` on a never-loaded store wrote an empty diff and **deleted all rows in the current scope**. Fixed: `save()` is a no-op until data is loaded, `setExtraColumns()` resets context via `resetContext()` without marking the store dirty, and the unused `forgetAll()` was removed.
 - [ ] No upsert: `write()` is a read-modify-write (pluck → update → insert → delete in separate queries). Concurrent requests cause lost updates or unique constraint violations on `(key, user_id)`. Switch to `upsert()` (available since Laravel 8, which is already the minimum).
 - [ ] `set($key, null)` silently deletes the key: `isset()` in the write-diff treats null as absent, and nulls are stripped from inserts ("Remove unsupported values"). This is undocumented and inconsistent with `get()`. Define explicit null semantics.
 
