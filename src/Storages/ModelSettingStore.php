@@ -44,7 +44,7 @@ class ModelSettingStore extends SettingStore
 	 */
 	public function setExtraColumns(array $columns): void
 	{
-		$this->forgetAll(); // Reboot old filters
+		$this->resetContext(); // Reboot old filters
 		$this->extraColumns = $columns;
 	}
 

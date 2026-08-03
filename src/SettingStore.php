@@ -178,6 +178,21 @@ abstract class SettingStore
     }
 
     /**
+     * Discard in-memory state on scope change (extra columns / constraint)
+     * WITHOUT marking the store dirty: switching context is not a data change,
+     * so a later save() with no explicit set()/forget() must be a no-op.
+     *
+     * @return void
+     */
+    protected function resetContext()
+    {
+        $this->unsaved = false;
+        $this->data = [];
+        $this->updatedData = [];
+        $this->loaded = false;
+    }
+
+    /**
      * Get all settings data.
      *
      * @return array
@@ -196,9 +211,10 @@ abstract class SettingStore
      */
     public function save()
     {
-        if (!$this->unsaved) {
-            // either nothing has been changed, or data has not been loaded, so
-            // do nothing by returning early
+        if (!$this->unsaved || !$this->loaded) {
+            // Nothing has been changed, or data has never been loaded.
+            // Writing an unloaded (empty) dataset would make write() treat
+            // every persisted key as deleted and wipe the whole scope.
             return;
         }
 
